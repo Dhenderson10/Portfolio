@@ -1,0 +1,5 @@
+ex3_3 suffers from seg faults, need to figure out whats going on
+- I think this is fixed
+
+
+ex3_4 just needs to be merged and the malloc errors dealt with

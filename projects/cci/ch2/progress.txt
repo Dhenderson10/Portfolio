@@ -1,0 +1,18 @@
+ex1:
+	works for most cases
+	except there is a seg fault when you have three duplicates
+	and one is at the end, come back to it.
+	also probably didn't free memory correctly...
+ex2:
+	fucking EZ
+ex3:
+	fucking EZ
+ex4:
+	UNFINISHED, question pretty broad
+ex5:
+	ez
+ex6:
+	ez
+ex7:
+	ez
+
