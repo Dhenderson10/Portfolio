@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel = "icon" href = "peace.ico" type = "image/x-icon">
+    <link rel = "stylesheet" href = "style.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <title>Daniel Henderson's Projects</title>
+  </head>
+    <body style="background-color:#E0E0E0">
+      <header><h1>Projects</h1></header>
+  <nav>
+	 <div style="top:0" class="my_navbar">
+     <ul style="list-style:none;">
+	    <li class="nav_list"><a href="index.html">Dan The Main Man</a></li>
+	    <li class="nav_list"><a href="index.html">Home</a></li>
+	    <li class="nav_list"><a href="projects.html">Projects</a></li>
+	    <li class="nav_list"><a href="about.html">About</a></li>
+      <li class="nav_list"> <a  href="contact.html">Contact</a></li>
+      <li class="nav_list"> <a  href="number.html">Decimal Converter</a></li>
+      <li class="nav_list"> <a href="game.html">Game</a></li>
+    </ul>
+   </div>
+	</nav>
+      <main>
+        <h2>Semi-Autonomous RC car</h2>
+
+
+        <div id="carousel-project" class="carousel slide" data-ride="carousel" data-pause="false">
+          <ol class="carousel-indicators">
+            <li data-target="#carousel-project" data-slide-to="0" class="active"></li>
+            <li data-target="#carousel-project" data-slide-to="1"></li>
+            <li data-target="#carousel-project" data-slide-to="2"></li>
+            <li data-target="#carousel-project" data-slide-to="3"></li>
+          </ol>
+        <div class="carousel-inner" role="listbox">
+        <div class="item active">
+          <img class="img-responsive center-block" src="car_1.jpg" alt="giant waterfall">
+          <div class="carousel-caption">
+          </div>
+        </div>
+        <div class="item">
+        <img src="car_2.jpg" alt="...">
+        <div class="carousel-caption">
+        </div>
+        </div>
+        <div class="item">
+        <img src="car_3.jpg" alt="...">
+        <div class="carousel-caption">
+        </div>
+        </div>
+        <div class="item">
+        <img src="car_0.jpg" alt="...">
+        <div class="carousel-caption">
+        </div>
+        </div>
+
+        </div>
+        </div>
+	  <p><a href = "https://github.com/Dhenderson10/RC_Car">Github Code</a></p>
+	<h3>Details</h3>
+	<p>This project was built from the ground up using various components. The
+	first crucial piece to this project was an XMOS board, which was used as
+	the main interface for the device. Attached to that were two servos motors,
+	these motors controlled the two big rear wheels you can see in the pictures
+	above. Attached to the XMOS board was a Wifi chip which was used to communicate
+	to the device directly using telnet, where commands could be issued.
+	Finally, the last piece intergrated was
+	an IMU, which helps the car determine where it is by calculating the current
+	angle of the device relative to its position when it was turned on. The
+	car was created to complete a small maze with obstacles, we achieved
+	a semi-autonomous solution to this challenge by using a breadth first
+	search algorithm, and commands specific to the maze environment.</p>
+
+	<h2>Edge Detection</h2>
+
+	  <div class = float_clear></div>
+    <div id="carousel-project" class="carousel slide" data-ride="carousel" data-pause="false">
+      <ol class="carousel-indicators">
+        <li data-target="#carousel-project" data-slide-to="0" class="active"></li>
+        <li data-target="#carousel-project" data-slide-to="1"></li>
+      </ol>
+    <div class="carousel-inner" role="listbox">
+    <div class="item active">
+      <img src="canmore.bmp" alt="giant waterfall">
+      <div class="carousel-caption">
+      </div>
+    </div>
+    <div class="item">
+    <img src="canmore gray.bmp" alt="...">
+    <div class="carousel-caption">
+    </div>
+    </div>
+
+    </div>
+    </div>
+         <p><a href = "https://github.com/Dhenderson10/Edge_Detection">Github Code</a></p>
+       <h3>Details</h3>
+       <p>Edge detection works by creating a seperate image that stores modified
+       values for the RGB values of a pixel. It begins by taking the 8 pixels around
+       one pixel (up, down, left, right, and diagnols) and calculating their greyscale
+       value, which is an average of the RGB. Those greyscale values are then used
+       to determine Vx and Vy,
+       which is computed as a <a href = https://en.wikipedia.org/wiki/Kernel_(image_processing)>convolution/kernel</a>. Once Vx and Vy are computed, they are used
+       in the final formula for the center pixel you were modifying, which is
+       grey = &radic; (Vx<sup>2</sup>+Vy<sup>2</sup>)&nbsp;. After that,
+       one must set pixel = (255 - grey), which colors the pixels that are not edges
+       white. Special cases are needed for the boundries, and were ignored in this
+       project.</p>
+
+       <h2>In Progress</h2>
+
+       <p>Although I'm still in school, the project I'm currently working on is Tetris
+       for the terminal (with themes!). It combines two things I love, video
+       games, and using the terminal (i.e. simplicity), if you want to learn more
+       about this or anything else that I've done,
+       contact me using the info below.</p>
+     </main>
+       <footer>
+         <h2>Contact Information</h2>
+	 <p>Daniel Henderson</p>
+	 <p>Phone: 913-485-0424</p>
+	 <p>Email: dannyhenderson36@gmail.com</p>
+	 <a href="https://www.facebook.com/danny.henderson.583"><img class = "icon"
+	 src = "f.png" alt = "facebook"/></a> <a href="https://www.linkedin.com/in/daniel-henderson-507106119/"><img class = "icon" src = "in.png" alt = "linkedin"/></a>
+       </footer>
+    </body>
+</html>
