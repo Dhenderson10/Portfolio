@@ -15,7 +15,7 @@ public class dataEditor {
   Connection conn = null ;
 
   try {
-	conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/smashbros?useSSL=false","dan","sinatra");  
+	conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/smashbros?useSSL=false","dan","PASSWD YO FATHA WOULD USE");  
 
 
   }
