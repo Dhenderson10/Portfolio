@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>D3: Setting path fills dynamically to generate a choropleth</title>
+		<script type="text/javascript" src="./d3/d3.js"></script>
+		<style type="text/css">
+			div.tooltip {
+			    position: absolute;
+			    text-align: center;
+			    padding: 2px;
+			    font: 12px sans-serif;
+			    background: lightsteelblue;
+			    border: 0px;
+			    border-radius: 8px;
+			    pointer-events: none;
+			}
+			div.buttons {
+				position: absolute;
+				top: 630px;
+			}
+			button {
+				background-color: #008CBA;
+				border: none;
+				color: white;
+				padding-right: 10px;
+				padding-left: 10px;
+				padding-top: 5px;
+				padding-bottom: 5px;
+			}
+			div.slider {
+				position: absolute;
+				top: 695px;
+				left: 345px;
+			}
+			#region_tag {
+				position: absolute;
+				top: 540px;
+				right: 500px;
+				font-family: "Arial";
+				color: #4682B4;
+			}
+			#projection_tag
+			{
+				position: absolute;
+				top: 590px;
+				right: 500px;
+				font-family: "Arial";
+				color: #4682B4;
+
+			}
+		</style>
+	</head>
+	<body>
+		<div class="slider">
+	<input style="position:absolute; bottom: 70px;" type = "range" id="range" list="tick-years"  min="1" max="3" step="1" value="" onchange="change_year();">
+</div>
+	<br>
+	<h1 id="region_tag" style="position:absolute; bottom:90px; right: 90px;"></h1>
+	<h2 id="projection_tag" style="position:absolute; bottom: 30px; right: 90px;"></h1>
+
+
+		<script type="text/javascript">
+
+		var currentMouseover = null;
+
+		var region = localStorage.getItem("region");
+		var year = localStorage.getItem("year");
+		var display_year = localStorage.getItem("display_year");
+		var numba = localStorage.getItem("numba");
+		var data_flag = localStorage.getItem("data_flag")
+
+		if(region == null)
+		{
+			region = "world.json"
+		}
+
+		if(year == null)
+		{
+			year = "2016.csv"
+		}
+
+		if(data_flag == null)//"1")
+		{
+			data_flag = "0";
+		}
+
+		if(display_year == null)
+		{
+			display_year = "2016"
+		}
+
+		function change_year()
+		{
+			numba = document.getElementById("range").value;
+			localStorage.setItem("numba", numba);
+			if(numba == 1)
+			{
+				localStorage.setItem("year", "2015.csv");
+				localStorage.setItem("display_year", "2015");
+			}
+			if(numba == 2)
+			{
+				localStorage.setItem("year", "2016.csv");
+				localStorage.setItem("display_year", "2016");
+			}
+			if(numba == 3)
+			{
+				localStorage.setItem("year", "2017.csv");
+				localStorage.setItem("display_year", "2017");
+			}
+			location.reload();
+		}
+
+		function change_region_NA()
+		{
+			localStorage.setItem("region", "NA.json");
+			location.reload();
+			document.getElementById("region_tag").innerHTML = "North America"
+		}
+
+		function change_region_SA()
+		{
+			localStorage.setItem("region", "SA.json");
+			location.reload();
+		}
+		function change_region_Africa()
+		{
+			localStorage.setItem("region", "africa.json");
+			location.reload();
+		}
+		function change_region_euro()
+		{
+			localStorage.setItem("region", "euro.json");
+			location.reload();
+		}
+		function change_region_oceania()
+		{
+			localStorage.setItem("region", "oceania.json");
+			location.reload();
+		}
+		function change_region_asia()
+		{
+			localStorage.setItem("region", "asia.json");
+			location.reload();
+		}
+		function change_region_world()
+		{
+			localStorage.setItem("region", "world.json");
+			location.reload();
+		}
+			//Width and height
+			var w = 1200;
+			var h = 600;
+			var scaley = 100;
+
+			document.body.style.backgroundColor = "aliceblue";
+
+			if(region == "world.json")
+			{
+				scaley = 200;
+				document.getElementById("region_tag").innerHTML = "World " + display_year
+			}
+			else if(region == "euro.json")
+			{
+				scaley = 500;
+				document.getElementById("region_tag").innerHTML = "Europe " + display_year
+			}
+			else if(region == "asia.json")
+			{
+				scaley = 300;
+				document.getElementById("region_tag").innerHTML = "Asia " + display_year
+			}
+			else if(region == "NA.json")
+			{
+				scaley = 350;
+				document.getElementById("region_tag").innerHTML = "North America " + display_year
+			}
+			else if(region == "SA.json")
+			{
+				scaley = 400;
+				document.getElementById("region_tag").innerHTML = "South America " + display_year
+			}
+			else if(region == "africa.json")
+			{
+				scaley = 400;
+				document.getElementById("region_tag").innerHTML = "Africa " + display_year
+			}
+			else if(region == "oceania.json")
+			{
+				scaley = 350;
+				document.getElementById("region_tag").innerHTML = "Oceania " + display_year
+			}
+			else scaley = 150;
+			//Define map projection
+			var projection = d3.geoEquirectangular()
+								   .translate([w/2, h/2])
+								   .scale([scaley]);
+
+			//Define path generator
+			var pathGenerator = d3.geoPath()
+							 .projection(projection);
+
+
+			//Create SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+
+						//Define quantize scale to sort data values into buckets of color
+
+								var color1 = d3.scaleQuantize()
+											.range(["rgb(0,109,44)", "rgb(49,163,84)", "rgb(116,196,118)", "rgb(255, 180, 180)", "rgb(255, 100, 100)", "rgb(255, 0, 0"]);
+
+								var color2 = d3.scaleQuantize()
+											//.range(["rgb(0,109,44)", "rgb(49,163,84)", "rgb(116,196,118)", "rgb(255, 180, 180)", "rgb(255, 100, 100)", "rgb(255, 0, 0"])
+											.range(["rgb(255, 0, 0", "rgb(255, 100, 100)", "rgb(255, 180, 180)" ,"rgb(116,196,118)","rgb(49,163,84)","rgb(0,109,44)"]);
+								var colorq = d3.scaleQuantize()
+											//.range(["rgb(0,109,44)", "rgb(49,163,84)", "rgb(116,196,118)", "rgb(255, 180, 180)", "rgb(255, 100, 100)", "rgb(255, 0, 0"])
+											.range(["rgb(255, 0, 0", "rgb(255, 100, 100)", "rgb(255, 180, 180)" ,"rgb(116,196,118)","rgb(49,163,84)","rgb(0,109,44)"]);
+
+								var color3 = d3.scaleQuantize()
+											.range(["rgb(255, 0, 0", "rgb(255, 100, 100)", "rgb(255, 180, 180)" ,"rgb(116,196,118)","rgb(49,163,84)","rgb(0,109,44)"]);
+
+								var color4 = d3.scaleQuantize()
+											.range(["rgb(255, 0, 0", "rgb(255, 100, 100)", "rgb(255, 180, 180)" ,"rgb(116,196,118)","rgb(49,163,84)","rgb(0,109,44)"]);
+
+								var color5 = d3.scaleQuantize()
+											.range(["rgb(255, 0, 0", "rgb(255, 100, 100)", "rgb(255, 180, 180)" ,"rgb(116,196,118)","rgb(49,163,84)","rgb(0,109,44)"]);
+
+								var color6 = d3.scaleQuantize()
+											.range(["rgb(255, 0, 0", "rgb(255, 100, 100)", "rgb(255, 180, 180)" ,"rgb(116,196,118)","rgb(49,163,84)","rgb(0,109,44)"]);
+
+								var color7 = d3.scaleQuantize()
+											.range(["rgb(255, 0, 0", "rgb(255, 100, 100)", "rgb(255, 180, 180)" ,"rgb(116,196,118)","rgb(49,163,84)","rgb(0,109,44)"]);
+
+								var color8 = d3.scaleQuantize()
+											.range(["rgb(255, 0, 0", "rgb(255, 100, 100)", "rgb(255, 180, 180)" ,"rgb(116,196,118)","rgb(49,163,84)","rgb(0,109,44)"]);
+
+								var color9 = d3.scaleQuantize()
+											.range(["rgb(255, 0, 0", "rgb(255, 100, 100)", "rgb(255, 180, 180)" ,"rgb(116,196,118)","rgb(49,163,84)","rgb(0,109,44)"]);
+
+
+			//Load in agriculture data
+			d3.csv(year, function(happyData) {
+
+				color1.domain([
+					d3.min(happyData, function(d) { return d.HappinessRank; }),
+					d3.max(happyData, function(d) { return d.HappinessRank; })
+				]);
+
+				//Set input domain for color scale
+				color2.domain([
+					d3.min(happyData, function(d) { return d.HappinessScore; }),
+					d3.max(happyData, function(d) { return d.HappinessScore; })
+				]);
+
+				color3.domain([
+					d3.min(happyData, function(d) { return d.GDP; }),
+					d3.max(happyData, function(d) { return d.GDP; })
+				]);
+
+				color4.domain([
+					d3.min(happyData, function(d) { return d.Family; }),
+					d3.max(happyData, function(d) { return d.Family; })
+				]);
+
+				color5.domain([
+					d3.min(happyData, function(d) { return d.Health; }),
+					d3.max(happyData, function(d) { return d.Health; })
+				]);
+
+				color6.domain([
+					d3.min(happyData, function(d) { return d.Freedom; }),
+					d3.max(happyData, function(d) { return d.Freedom; })
+				]);
+
+				color7.domain([
+					d3.min(happyData, function(d) { return d.Government; }),
+					d3.max(happyData, function(d) { return d.Government; })
+				]);
+
+				color8.domain([
+					d3.min(happyData, function(d) { return d.Generosity; }),
+					d3.max(happyData, function(d) { return d.Generosity; })
+				]);
+
+				color9.domain([
+					d3.min(happyData, function(d) { return d.Dystopia; }),
+					d3.max(happyData, function(d) { return d.Dystopia; })
+				]);
+
+				//Load in GeoJSON data
+				d3.json(region, function(dataJsonRegion) {
+					console.log(region);
+					//Merge the ag. agData and GeoJSON
+					//Loop through once for each ag. agData value
+					 for (var i = 0; i < happyData.length; i++) {
+
+
+						//Grab state name
+						var dataCountry = happyData[i].Country.toLowerCase();
+
+						//Grab data value, and convert from string to float
+						var dataValue;
+						if(data_flag == "0")
+						{
+						 	dataValue = parseFloat(happyData[i].HappinessScore);
+							document.getElementById("projection_tag").innerHTML = "Happiness Score"
+						}
+						if(data_flag == "1")
+						{
+							dataValue = parseFloat(happyData[i].GDP)
+							document.getElementById("projection_tag").innerHTML = "GDP"
+
+						}
+						if(data_flag == "2")
+						{
+							dataValue = parseFloat(happyData[i].Family)
+							document.getElementById("projection_tag").innerHTML = "Family"
+
+						}
+						if(data_flag == "3")
+						{
+							dataValue = parseFloat(happyData[i].Health)
+							document.getElementById("projection_tag").innerHTML = "Health"
+
+						}
+						if(data_flag == "4")
+						{
+							dataValue = parseFloat(happyData[i].Freedom)
+							document.getElementById("projection_tag").innerHTML = "Freedom"
+
+						}
+						if(data_flag == "5")
+						{
+							dataValue = parseFloat(happyData[i].Government)
+							document.getElementById("projection_tag").innerHTML = "Government Corruption"
+
+						}
+						if(data_flag == "6")
+						{
+							dataValue = parseFloat(happyData[i].Generosity)
+							document.getElementById("projection_tag").innerHTML = "Generosity"
+
+						}
+
+
+						//Find the corresponding state inside the GeoJSON
+						for (var j = 0; j < dataJsonRegion.features.length; j++) {
+
+							var jsonCountry = dataJsonRegion.features[j].properties.name;
+							jsonCountry = jsonCountry.toLowerCase();
+
+							if (dataCountry == jsonCountry) {
+
+
+								//Copy the data value into the JSON
+								// ZZZ - note, there is no properties.value, this dynamically creates it!
+								dataJsonRegion.features[j].properties.value = dataValue;
+								break;
+
+							}
+						}
+					}
+
+					d3.select("svg").append("circle").attr("id", "centerDonut").attr("cx", 150).attr("cy", 450)
+					.attr("r", 50).attr("fill", "aliceblue");
+
+					d3.select("svg")
+					.append("text")
+					.attr("id", "yearText")
+					.text("Select Year: ")
+					.attr("x", 345)
+					.attr("y", 575)
+					.attr("text-anchor", "start")
+					.attr("font-family", "Arial")
+					.attr("font-size", "15px")
+					.attr("fill", "rgb(0,0,0)");
+
+
+
+					d3.select("svg")
+					.append("text")
+					.attr("id", "rankText")
+					.text("")
+					.attr("x", 150)
+					.attr("y", 440)
+					.attr("text-anchor", "middle")
+					.attr("font-family", "sans-serif")
+					.attr("font-size", "15px")
+					.attr("fill", "rgb(0,0,0)");
+
+					d3.select("svg")
+					.append("text")
+					.attr("id", "scoreText")
+					.text("")
+					.attr("x", 150)
+					.attr("y", 460)
+					.attr("text-anchor", "middle")
+					.attr("font-family", "sans-serif")
+					.attr("font-size", "15px")
+					.attr("fill", "rgb(0,0,0)");
+
+					d3.select("svg")
+					.append("text")
+					.attr("id", "countryText")
+					.text("")
+					.attr("x", 150)
+					.attr("y", 340)
+					.attr("text-anchor", "middle")
+					.attr("font-family", "sans-serif")
+					.attr("font-size", "16px")
+					.attr("fill", "rgb(0,0,0)");
+
+					d3.select("svg")
+					.append("text")
+					.attr("id", "hoverText")
+					.text("")
+					.attr("x", 150)
+					.attr("y", 575)
+					.attr("text-anchor", "middle")
+					.attr("font-family", "sans-serif")
+					.attr("font-size", "16px")
+					.attr("fill", "rgb(0,0,0)");
+
+					var prevPathID = null;
+					var prevPathIDColor = "#ccc";
+
+					// Define the div for the tooltip
+					var div = d3.select("body").append("div")
+					    .attr("class", "tooltip")
+					    .style("opacity", 0);
+
+					svg.selectAll("path")
+					   .data(dataJsonRegion.features)  // this is the data binding
+					   .enter()
+					   .append("path")
+					   .attr("id", function(d) {  // add the path data for this state using geo pathGenerator defined above
+						 return d.properties.postal + d.properties.pop_est;
+						})
+					   .attr("transform", function(d, i) {
+					   		if(region === "world.json") return "translate(0,25)";
+					   		if(region === "euro.json") return "translate(-25,500)";
+					   		if(region === "SA.json") return "translate(450,-150)";
+					   		if(region === "NA.json") return "translate(625, 250)";
+					   		if(region === "africa.json") return "translate(-100,0)";
+					   		if(region === "oceania.json") return "translate(-825,-175)";
+					   		if(region === "asia.json") return "translate(-450,200)";
+					   })
+					   .attr("d", pathGenerator)
+					   .style("fill", function(d) {   // set the fill color using "color", 		i.e. scaleQuantize
+					   		var value = d.properties.value;
+					   		if (value) {
+									if(data_flag == "0")
+									{
+										return color2(value); //HappinessScore
+									}
+									if(data_flag == "1")
+									{
+										return color3(value); //GDP
+									}
+									if(data_flag == "2")
+									{
+										return color4(value); //Family
+									}
+									if(data_flag == "3")
+									{
+										return color5(value); //Health
+									}
+									if(data_flag == "4")
+									{
+										return color6(value); //Freedom
+									}
+									if(data_flag == "5")
+									{
+										return color7(value); //Government
+									}
+									if(data_flag == "6")
+									{
+										return color8(value); //Generosity
+									}
+					   		}
+					   		else {
+						   		return "#ccc";
+					   		}
+					    })
+					    .on("mouseover", function(d) {
+					    	var rank;
+			           			//console.log(d);
+			           			for(var i = 0; i < happyData.length; i++) {
+			           				if(d.properties.name == happyData[i].Country) {
+			           					rank = happyData[i].HappinessRank;
+			           					break;
+			           				}
+			           				else rank = "n/a";
+			           			}
+			            	div.transition()
+			                .duration(200)
+			                .style("opacity", .9);
+			           		div.html(d.properties.name + "<br/>" + rank)
+			                .style("left", (d3.event.pageX) + "px")
+			                .style("top", (d3.event.pageY - 28) + "px");
+			           	})
+			           	.on("mouseout", function(d) {
+			            div.transition()
+			                .duration(500)
+			                .style("opacity", 0);
+        				})
+						.on("click", function(d) {
+					   	var pathID = "path#" + d.properties.postal + d.properties.pop_est;
+					   	//console.log(d);
+							document.getElementById("default_image").src = ""
+					   		svg.selectAll("path").style("stroke", "none");
+					   		svg.select(pathID).style("stroke", "black").style("fill", "orange");
+					   		if(prevPathID != null) {
+					   			svg.select(prevPathID).style("fill", prevPathIDColor);
+					   		}
+					   		prevPathID = pathID;
+					   		prevPathIDColor = function() {
+					   			var value = d.properties.value;
+						   		if (value)
+									{
+										if(data_flag == "0")
+										{
+											return color2(value); //HappinessScore
+										}
+										if(data_flag == "1")
+										{
+											return color3(value); //GDP
+										}
+										if(data_flag == "2")
+										{
+											return color4(value); //Family
+										}
+										if(data_flag == "3")
+										{
+											return color5(value); //Health
+										}
+										if(data_flag == "4")
+										{
+											return color6(value); //Freedom
+										}
+										if(data_flag == "5")
+										{
+											return color7(value); //Government
+										}
+										if(data_flag == "6")
+										{
+											return color8(value); //Generosity
+										}
+									}
+						   		else return "#ccc";
+					   		};
+								svg.select("text#country").text(d.properties.name);
+								d3.csv(year, function(happyData) {
+										var found = 0;
+										var index = 0;
+										var pieData = [["GDP", null], ["Family", null], ["Health", null], ["Freedom", null], ["Government", null], ["Generosity", null]];
+									 for (var i = 0; i < happyData.length; i++) {
+
+										 if(d.properties.name == happyData[i].Country)
+										 {
+											 found = 1;
+											 var happyRank = happyData[i].HappinessRank;
+											 var happyScore = happyData[i].HappinessScore;
+											 var countryName = happyData[i].Country;
+											 pieData[0][1] = happyData[i].GDP;
+											 pieData[1][1] = happyData[i].Family;
+											 pieData[2][1] = happyData[i].Health;
+											 pieData[3][1] = happyData[i].Freedom;
+											 pieData[4][1] = happyData[i].Government;
+											 pieData[5][1] = happyData[i].Generosity;
+											 var pieChart = d3.pie();
+											 var newArc = d3.arc();
+											 newArc.innerRadius(50).outerRadius(100);
+
+											 pieChart.value(function(d,i) {
+											 	return pieData[i][1];
+											 });
+											 var yourPie = pieChart(pieData);
+
+											 d3.select("svg").append("g")
+											 .attr("transform", "translate(150,450)")
+											 .selectAll("path")
+											 .data(yourPie)
+											 .enter()
+											 .append("path")
+	            							 .attr("d", newArc)
+	           								 .style("fill", function(d, i) {
+	           								 	if(i == 0) return color3(pieData[i][1]);
+	           								 	if(i == 1) return color4(pieData[i][1]);
+	           								 	if(i == 2) return color5(pieData[i][1]);
+	           								 	if(i == 3) return color6(pieData[i][1]);
+	           								 	if(i == 4) return color7(pieData[i][1]);
+	           								 	if(i == 5) return color8(pieData[i][1]);
+	           								 })
+	            							 .style("stroke", "black")
+	            							 .style("stroke-width", "1px")
+	            							 .on("mouseover", function(d,i) {
+	            							 	d3.select("svg").select("text#hoverText")
+	            							 	.text(pieData[i][0] + " " + parseFloat(pieData[i][1]).toFixed(2));
+	            							 })
+	            							 .on("mouseout", function(d,i) {
+	            							 	d3.select("svg").select("text#hoverText")
+	            							 	.text("");
+	            							 })
+	            							 .on("click", function(d, i) {
+															 //if(pieData[i][0] == "Hap")
+															if(pieData[i][0] == "GDP")
+															{
+																localStorage.setItem("data_flag", "1");
+															}
+															if(pieData[i][0] == "Family")
+															{
+																localStorage.setItem("data_flag", "2");
+
+															}
+															if(pieData[i][0] == "Health")
+															{
+																localStorage.setItem("data_flag", "3");
+															}
+															if(pieData[i][0] == "Freedom")
+															{
+																localStorage.setItem("data_flag", "4");
+															}
+															if(pieData[i][0] == "Government")
+															{
+																localStorage.setItem("data_flag", "5");
+															}
+															if(pieData[i][0] == "Generosity")
+															{
+																localStorage.setItem("data_flag", "6");
+															}
+															location.reload();
+	            							 });
+	            							 d3.select("svg").select("circle#centerDonut").attr("fill", color2(happyScore));
+	            							 d3.select("svg").select("text#countryText")
+	            							 .text(countryName);
+	            							 d3.select("svg").select("text#rankText")
+	            							 .text("Rank: " + happyRank).attr("font-weight", "bold");
+														 //HEEEEERRRREEEEEEE
+
+	            							 d3.select("svg").select("text#scoreText")
+	            							 .text("Score: " + parseFloat(happyScore).toFixed(1)).attr("font-weight", "bold");
+														 /*.on("click", function(d) {
+
+
+														 });*/
+														 d3.select("svg").select("text#scoreText")
+														 .on("click", function(d) {
+															 localStorage.setItem("data_flag", "0");
+															 location.reload();
+														 })
+
+            							} else if (found != 1 || found == null)
+													{
+														var happyRank = happyData[i].HappinessRank;
+														var happyScore = happyData[i].HappinessScore;
+														//var countryName = happyData[i].Country;
+														pieData[0][1] = 1;
+														pieData[1][1] = 0;
+														pieData[2][1] = 0;
+														pieData[3][1] = 0;
+														pieData[4][1] = 0;
+														pieData[5][1] = 0;
+														var pieChart = d3.pie();
+														var newArc = d3.arc();
+														newArc.innerRadius(50).outerRadius(100);
+														pieChart.value(function(d,i) {
+														 return pieData[i][1];
+														});
+														var yourPie = pieChart(pieData);
+
+														d3.select("svg").append("g")
+														.attr("transform", "translate(150,450)")
+														.selectAll("path")
+														.data(yourPie)
+														.enter()
+														.append("path")
+																	.attr("d", newArc)
+																	.style("fill", function(d, i) {
+																	 if(i == 0) return color3(pieData[0][0]);
+																	 if(i == 1) return color4(pieData[0][0]);
+																	 if(i == 2) return color5(pieData[0][0]);
+																	 if(i == 3) return color6(pieData[0][0]);
+																	 if(i == 4) return color7(pieData[0][0]);
+																	 if(i == 5) return color8(pieData[0][0]);
+																	})
+																	.style("stroke", "black")
+																	.style("stroke-width", "1px")
+																	.on("mouseover", function(d,i) {
+																	 d3.select("svg").select("text#hoverText")
+																	 .text(pieData[i][0] + " " + parseFloat(pieData[i][1]).toFixed(2));
+																	})
+																	.on("mouseout", function(d,i) {
+																	 d3.select("svg").select("text#hoverText")
+																	 .text("");
+																	});
+
+																	d3.select("svg").select("circle#centerDonut").attr("fill", "#f0f8ff");
+																	d3.select("svg").select("text#countryText")
+																	.text(d.properties.name);
+																	d3.select("svg").select("text#rankText")
+																	.text("");
+																	d3.select("svg").select("text#scoreText")
+																	.text("");
+										}
+									 }
+									 
+							})
+
+					   });
+
+				});
+				});
+
+		document.getElementById("range").value = numba;
+		</script>
+		<img id="default_image" src="./default.png" style="position:absolute; bottom: 45px; left:47px">
+		<button onclick = "change_region_SA();"> South America </button>
+		<button onclick = "change_region_NA();"> North America </button>
+		<button onclick = "change_region_Africa();"> Africa </button>
+		<button onclick = "change_region_euro();"> Euro </button>
+		<button onclick = "change_region_oceania();"> Oceania </button>
+		<button onclick = "change_region_asia();"> Asia </button>
+		<button onclick = "change_region_world();"> World </button>
+</html>
